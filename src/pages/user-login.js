@@ -1,16 +1,21 @@
 import Head from "next/head";
+import { useState } from 'react';
+import { UserLoginForm, DonorProfile } from '../components/UserLoginForm';
 
+// Main UserLogin page component
 export default function UserLogin() {
+  // State to manage view (login or profile)
+  const [showProfile, setShowProfile] = useState(false);
+
   return (
     <>
       <Head>
-        <title>User Login - Organ Donor Portal</title>
+        <title>{showProfile ? "Donor Profile" : "User Login"} - Organ Donor Portal</title>
         <link
           href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap"
           rel="stylesheet"
         />
       </Head>
-
       <div>
         <style>{`
           body {
@@ -23,7 +28,7 @@ export default function UserLogin() {
             justify-content: space-between;
           }
 
-          .login-page-container {
+          .login-page-container, .profile-page-container {
             display: flex;
             justify-content: center;
             align-items: center;
@@ -31,7 +36,7 @@ export default function UserLogin() {
             flex-grow: 1;
           }
 
-          .login-card {
+          .login-card, .profile-card {
             background: white;
             padding: 40px 30px;
             border-radius: 12px;
@@ -48,13 +53,13 @@ export default function UserLogin() {
             margin-bottom: 20px;
           }
 
-          .login-card h2 {
+          .login-card h2, .profile-card h2 {
             font-size: 24px;
             color: #c62828;
             margin-bottom: 10px;
           }
 
-          .login-description {
+          .login-description, .profile-description {
             font-size: 14px;
             color: #555;
             margin-bottom: 20px;
@@ -66,7 +71,7 @@ export default function UserLogin() {
             gap: 15px;
           }
 
-          form input {
+          form input, form select {
             padding: 12px;
             border: 1px solid #ccc;
             border-radius: 6px;
@@ -104,7 +109,7 @@ export default function UserLogin() {
             text-decoration: underline;
           }
 
-          .login-footer {
+          .login-footer, .profile-footer {
             background-color: #212121;
             color: white;
             text-align: center;
@@ -113,36 +118,22 @@ export default function UserLogin() {
           }
 
           @media (max-width: 480px) {
-            .login-card {
+            .login-card, .profile-card {
               padding: 30px 20px;
             }
           }
         `}</style>
-
-        <div className="login-page-container">
-          <div className="login-card">
-            <img
-              src="https://www.sakraworldhospital.com/assets/spl_splimgs/organ-donation-2020-1.webp"
-              alt="Organ Donation Banner"
-              className="login-logo"
-            />
-            <h2>User Login</h2>
-            <p className="login-description">
-              Sign in to manage your donor profile, check organ availability, and update your health records.
-            </p>
-            <form>
-              <input type="email" placeholder="Enter your Email" required />
-              <input type="password" placeholder="Enter Password" required />
-              <button type="submit">Login</button>
-            </form>
-            <p className="register-link">
-              Not registered yet? <a href="register.html">Register here</a>
-            </p>
+        {showProfile ? (
+          <div className="profile-page-container">
+            <DonorProfile />
           </div>
-        </div>
-
-        <footer className="login-footer">
-          <p>&copy; 2025 Donate Organs Initiative | A Mission by OHM</p>
+        ) : (
+          <div className="login-page-container">
+            <UserLoginForm onLoginSuccess={() => setShowProfile(true)} />
+          </div>
+        )}
+        <footer className={showProfile ? "profile-footer" : "login-footer"}>
+          © 2025 Donate Organs Initiative | A Mission by OHM
         </footer>
       </div>
     </>

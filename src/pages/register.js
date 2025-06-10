@@ -1,16 +1,22 @@
 import Head from "next/head";
+import { useState } from 'react';
+import { RegisterForm, DonorConfirmation } from '../components/RegisterForm';
 
+// Main Register page component
 export default function Register() {
+  // State to manage view (registration form or confirmation) and donor data
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [donorData, setDonorData] = useState(null);
+
   return (
     <>
       <Head>
-        <title>Register Now - Organ Donor Portal</title>
+        <title>{showConfirmation ? "Registration Confirmation" : "Register Now"} - Organ Donor Portal</title>
         <link
           href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap"
           rel="stylesheet"
         />
       </Head>
-
       <div>
         <style>{`
           body {
@@ -24,24 +30,23 @@ export default function Register() {
             padding: 40px 20px;
           }
 
-          .register-form {
+          .register-form, .confirmation-form {
             background: white;
             padding: 40px;
             border-radius: 12px;
             max-width: 600px;
             width: 100%;
             box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+            text-align: center;
           }
 
           h2 {
-            text-align: center;
             color: #d32f2f;
             font-size: 26px;
             margin-bottom: 10px;
           }
 
-          .login-description {
-            text-align: center;
+          .login-description, .confirmation-description {
             color: #555;
             font-size: 14px;
             margin-bottom: 30px;
@@ -57,6 +62,7 @@ export default function Register() {
             font-weight: 600;
             font-size: 14px;
             color: #333;
+            text-align: left;
           }
 
           input[type="text"],
@@ -87,6 +93,9 @@ export default function Register() {
 
           .checkbox-container {
             margin: 8px 0 15px;
+            display: flex;
+            gap: 15px;
+            justify-content: center;
           }
 
           .checkbox-container input[type="checkbox"] {
@@ -105,48 +114,43 @@ export default function Register() {
             color: #555;
           }
 
+          .welcome-message {
+            color: #2e7d32;
+            font-weight: 600;
+            margin-bottom: 20px;
+          }
+
+          .donor-details {
+            margin-top: 20px;
+            text-align: left;
+          }
+
+          .donor-details h3 {
+            font-size: 18px;
+            color: #d32f2f;
+            margin-bottom: 10px;
+          }
+
+          .donor-details p {
+            font-size: 14px;
+            color: #555;
+            margin: 5px 0;
+          }
+
           @media (max-width: 480px) {
-            .register-form {
+            .register-form, .confirmation-form {
               padding: 25px 20px;
             }
           }
         `}</style>
-
-        <div className="register-form">
-          <h2>Donor Registration</h2>
-          <p className="login-description">
-            Join our community of life savers by registering as a donor. Your contribution can give someone a second chance at life.
-          </p>
-
-          <form>
-            <label htmlFor="fullname">Full Name</label>
-            <input id="fullname" type="text" placeholder="Full Name" required />
-
-            <label htmlFor="email">Email Address</label>
-            <input id="email" type="email" placeholder="Email Address" required />
-
-            <label htmlFor="phone">Phone Number</label>
-            <input id="phone" type="tel" placeholder="Phone Number" required />
-
-            <label htmlFor="location">Location (City, State)</label>
-            <input id="location" type="text" placeholder="Location (City, State)" required />
-
-            <label>Select Donation Type:</label>
-            <div className="checkbox-container">
-              <input type="checkbox" id="blood" name="donationType" value="Blood" />
-              <label htmlFor="blood">Blood</label>
-
-              <input type="checkbox" id="organs" name="donationType" value="Organs" />
-              <label htmlFor="organs">Organs</label>
-            </div>
-
-            <button type="submit">Submit</button>
-          </form>
-
-          <p className="note">
-            <strong>Note:</strong> All your details are kept confidential and used only for donor matching purposes.
-          </p>
-        </div>
+        {showConfirmation && donorData ? (
+          <DonorConfirmation donorData={donorData} />
+        ) : (
+          <RegisterForm onRegisterSuccess={(data) => {
+            setDonorData(data);
+            setShowConfirmation(true);
+          }} />
+        )}
       </div>
     </>
   );

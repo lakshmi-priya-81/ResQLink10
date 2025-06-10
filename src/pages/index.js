@@ -12,14 +12,11 @@ export default function Home() {
       </Head>
 
       <div
+        className="font-poppins bg-cover bg-fixed bg-center text-gray-900 min-h-screen"
         style={{
           fontFamily: "'Poppins', sans-serif",
           backgroundImage:
             "url('https://images.unsplash.com/photo-1588776814546-ec7d16d58d3d?auto=format&fit=crop&w=1470&q=80')",
-          backgroundSize: "cover",
-          backgroundAttachment: "fixed",
-          backgroundPosition: "center",
-          color: "#111",
         }}
       >
         {/* Header */}
@@ -27,8 +24,9 @@ export default function Home() {
           <div className="flex items-center gap-4">
             <img
               src="https://www.pngarc.com/wp-content/uploads/2023/05/World-Blood-Donor-Day-Organ-donation-logo-png-image-min.png"
-              alt="Logo"
+              alt="Organ Donation Logo"
               className="h-[60px] w-auto"
+              onError={(e) => (e.target.src = "/logo.png")} // Fallback image
             />
             <div className="text-sm leading-tight">
               <strong>Under Organ Health Mission</strong>
@@ -88,6 +86,7 @@ export default function Home() {
               src="https://img.freepik.com/free-vector/donate-blood-isolated-logo_1025-350.jpg"
               alt="Donate Blood or Organs"
               className="rounded-lg w-[300px] max-w-full mx-auto"
+              onError={(e) => (e.target.src = "/hero-image.png")} // Fallback image
             />
           </div>
         </section>
@@ -116,6 +115,7 @@ export default function Home() {
                 src={card.img}
                 alt={`Card ${index + 1}`}
                 className="rounded-md mb-2 w-full h-auto"
+                onError={(e) => (e.target.src = "/card-image.png")} // Fallback image
               />
               <p className="text-sm text-gray-700">{card.text}</p>
             </div>
@@ -135,7 +135,7 @@ export default function Home() {
 
         {/* Footer */}
         <footer className="bg-black text-white text-center py-4 text-sm">
-          &copy; 2025 Donate Organs Initiative. All Rights Reserved. | Designed under OHM
+          © 2025 Donate Organs Initiative. All Rights Reserved. | Designed under OHM
         </footer>
       </div>
     </>
