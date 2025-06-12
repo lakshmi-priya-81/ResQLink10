@@ -1,10 +1,9 @@
 import Head from "next/head";
 import { useState } from 'react';
 import { RegisterForm, DonorConfirmation } from '../components/RegisterForm';
+import Chatbot from '../components/Chatbot';
 
-// Main Register page component
 export default function Register() {
-  // State to manage view (registration form or confirmation) and donor data
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [donorData, setDonorData] = useState(null);
 
@@ -12,10 +11,7 @@ export default function Register() {
     <>
       <Head>
         <title>{showConfirmation ? "Registration Confirmation" : "Register Now"} - Organ Donor Portal</title>
-        <link
-          href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap"
-          rel="stylesheet"
-        />
+       
       </Head>
       <div>
         <style>{`
@@ -28,6 +24,7 @@ export default function Register() {
             align-items: center;
             justify-content: center;
             padding: 40px 20px;
+            flex-direction: column;
           }
 
           .register-form, .confirmation-form {
@@ -143,14 +140,21 @@ export default function Register() {
             }
           }
         `}</style>
-        {showConfirmation && donorData ? (
-          <DonorConfirmation donorData={donorData} />
-        ) : (
-          <RegisterForm onRegisterSuccess={(data) => {
-            setDonorData(data);
-            setShowConfirmation(true);
-          }} />
-        )}
+
+        {/* Registration or Confirmation */}
+        <div className="register-form">
+          {showConfirmation && donorData ? (
+            <DonorConfirmation donorData={donorData} />
+          ) : (
+            <RegisterForm onRegisterSuccess={(data) => {
+              setDonorData(data);
+              setShowConfirmation(true);
+            }} />
+          )}
+        </div>
+
+        {/* Gemini Chatbot */}
+        <Chatbot />
       </div>
     </>
   );
