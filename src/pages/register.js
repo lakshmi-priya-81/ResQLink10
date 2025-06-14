@@ -3,6 +3,9 @@ import { useState } from 'react';
 import { RegisterForm, DonorConfirmation } from '../components/RegisterForm';
 import Chatbot from '../components/Chatbot';
 
+
+
+
 export default function Register() {
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [donorData, setDonorData] = useState(null);

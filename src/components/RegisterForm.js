@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import { collection, addDoc, Timestamp } from 'firebase/firestore';
+import { db } from '../lib/firebase';
 
-// RegisterForm component for handling donor registration with validation and persistence
 export function RegisterForm({ onRegisterSuccess }) {
-  // State for form inputs, error messages, and submission status
   const [formData, setFormData] = useState({
     fullname: '',
     email: '',
@@ -13,33 +13,31 @@ export function RegisterForm({ onRegisterSuccess }) {
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isRegistered, setIsRegistered] = useState(false);
-  const [countdown, setCountdown] = useState(5); // Countdown for redirect after registration
+  const [countdown, setCountdown] = useState(5);
 
-  // Clear localStorage on component mount to ensure fresh registration
+  // 👇 New state for viewing saved response
+  const [showResponse, setShowResponse] = useState(false);
+  const [savedData, setSavedData] = useState(null);
+
   useEffect(() => {
     localStorage.removeItem('registerFormData');
     localStorage.removeItem('isRegistered');
   }, []);
 
-  // Effect: Handle countdown for redirect after successful registration
   useEffect(() => {
     if (isRegistered && countdown > 0) {
-      const timer = setTimeout(() => {
-        setCountdown(countdown - 1);
-      }, 1000);
+      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
       return () => clearTimeout(timer);
     } else if (isRegistered && countdown === 0) {
-      onRegisterSuccess(formData); // Trigger parent state to show DonorConfirmation
+      onRegisterSuccess(formData);
     }
   }, [isRegistered, countdown, onRegisterSuccess, formData]);
 
-  // Handle input changes
   const handleInputChange = (e) => {
     const { id, value } = e.target;
     setFormData((prev) => ({ ...prev, [id]: value }));
   };
 
-  // Handle checkbox changes
   const handleCheckboxChange = (e) => {
     const { id, checked } = e.target;
     setFormData((prev) => ({
@@ -48,34 +46,43 @@ export function RegisterForm({ onRegisterSuccess }) {
     }));
   };
 
-  // Handle form submission with validation
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    // Validate form
     if (!formData.fullname || !formData.email || !formData.phone || !formData.location) {
       setError('Please fill in all fields.');
       setIsSubmitting(false);
       return;
     }
+
     if (!formData.donationTypes.blood && !formData.donationTypes.organs) {
       setError('Please select at least one donation type.');
       setIsSubmitting(false);
       return;
     }
 
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      const timestamp = Timestamp.now();
+      const docData = {
+        ...formData,
+        submittedAt: timestamp,
+      };
+
+      await addDoc(collection(db, 'donors'), docData);
+
       setIsRegistered(true);
       setError('');
       localStorage.setItem('isRegistered', 'true');
       localStorage.setItem('registerFormData', JSON.stringify(formData));
       setIsSubmitting(false);
-    }, 1000); // Simulate network delay
+    } catch (err) {
+      console.error('Error saving to Firestore:', err);
+      setError('Something went wrong. Please try again.');
+      setIsSubmitting(false);
+    }
   };
 
-  // Reset form
   const handleReset = () => {
     setFormData({
       fullname: '',
@@ -86,8 +93,20 @@ export function RegisterForm({ onRegisterSuccess }) {
     });
     setIsRegistered(false);
     setCountdown(5);
+    setShowResponse(false);
     localStorage.removeItem('registerFormData');
     localStorage.removeItem('isRegistered');
+  };
+
+  // 👇 View Response Handler
+  const handleViewResponse = () => {
+    const data = localStorage.getItem('registerFormData');
+    if (data) {
+      setSavedData(JSON.parse(data));
+      setShowResponse(true);
+    } else {
+      alert("No response found.");
+    }
   };
 
   return (
@@ -96,6 +115,7 @@ export function RegisterForm({ onRegisterSuccess }) {
       <p className="login-description">
         Join our community of life savers by registering as a donor.
       </p>
+
       {isRegistered ? (
         <div>
           <p>Registration successful! Welcome to the Organ Donor Portal.</p>
@@ -122,72 +142,70 @@ export function RegisterForm({ onRegisterSuccess }) {
       ) : (
         <form onSubmit={handleSubmit}>
           <label htmlFor="fullname">Full Name</label>
-          <input
-            id="fullname"
-            type="text"
-            placeholder="Full Name"
-            value={formData.fullname}
-            onChange={handleInputChange}
-            required
-          />
+          <input id="fullname" type="text" value={formData.fullname} onChange={handleInputChange} required />
 
           <label htmlFor="email">Email Address</label>
-          <input
-            id="email"
-            type="email"
-            placeholder="Email Address"
-            value={formData.email}
-            onChange={handleInputChange}
-            required
-          />
+          <input id="email" type="email" value={formData.email} onChange={handleInputChange} required />
 
           <label htmlFor="phone">Phone Number</label>
-          <input
-            id="phone"
-            type="tel"
-            placeholder="Phone Number"
-            value={formData.phone}
-            onChange={handleInputChange}
-            required
-          />
+          <input id="phone" type="tel" value={formData.phone} onChange={handleInputChange} required />
 
           <label htmlFor="location">Location (City, State)</label>
-          <input
-            id="location"
-            type="text"
-            placeholder="Location (City, State)"
-            value={formData.location}
-            onChange={handleInputChange}
-            required
-          />
+          <input id="location" type="text" value={formData.location} onChange={handleInputChange} required />
 
           <label>Select Donation Type:</label>
           <div className="checkbox-container">
-            <input
-              type="checkbox"
-              id="blood"
-              name="donationType"
-              checked={formData.donationTypes.blood}
-              onChange={handleCheckboxChange}
-            />
+            <input type="checkbox" id="blood" checked={formData.donationTypes.blood} onChange={handleCheckboxChange} />
             <label htmlFor="blood">Blood</label>
-
-            <input
-              type="checkbox"
-              id="organs"
-              name="donationType"
-              checked={formData.donationTypes.organs}
-              onChange={handleCheckboxChange}
-            />
+            <input type="checkbox" id="organs" checked={formData.donationTypes.organs} onChange={handleCheckboxChange} />
             <label htmlFor="organs">Organs</label>
           </div>
 
-          {error && <p style={{ color: 'red', fontSize: '13px' }}>{error}</p>}
+          {error && <p style={{ color: 'red' }}>{error}</p>}
+
           <button type="submit" disabled={isSubmitting}>
             {isSubmitting ? 'Submitting...' : 'Submit'}
           </button>
         </form>
       )}
+
+      <button
+        type="button"
+        style={{
+          marginTop: "12px",
+          padding: "10px",
+          backgroundColor: "#1565c0",
+          color: "white",
+          fontWeight: "bold",
+          borderRadius: "6px",
+          border: "none",
+          cursor: "pointer"
+        }}
+        onClick={handleViewResponse}
+      >
+        View Your Response
+      </button>
+
+      {showResponse && savedData && (
+        <div style={{
+          marginTop: "20px",
+          background: "#f5f5f5",
+          padding: "20px",
+          borderRadius: "10px",
+          textAlign: "left"
+        }}>
+          <h3>Your Submitted Details:</h3>
+          <p><strong>Name:</strong> {savedData.fullname}</p>
+          <p><strong>Email:</strong> {savedData.email}</p>
+          <p><strong>Phone:</strong> {savedData.phone}</p>
+          <p><strong>Location:</strong> {savedData.location}</p>
+          <p><strong>Donation Types:</strong>
+            {savedData.donationTypes.blood && ' Blood'}
+            {savedData.donationTypes.organs && ' Organs'}
+          </p>
+        </div>
+      )}
+
       <p className="note">
         <strong>Note:</strong> All your details are kept confidential and used only for donor matching purposes.
       </p>
@@ -195,12 +213,11 @@ export function RegisterForm({ onRegisterSuccess }) {
   );
 }
 
-// DonorConfirmation component (unchanged)
 export function DonorConfirmation({ donorData }) {
   const [confirmationMessage, setConfirmationMessage] = useState('Thank you for registering!');
   const [registrationTime, setRegistrationTime] = useState(null);
   const [showWelcome, setShowWelcome] = useState(true);
-  const [countdown, setCountdown] = useState(10); // Countdown for redirect to dashboard
+  const [countdown, setCountdown] = useState(10);
 
   useEffect(() => {
     setRegistrationTime(new Date().toISOString());
@@ -218,9 +235,7 @@ export function DonorConfirmation({ donorData }) {
 
   useEffect(() => {
     if (countdown > 0) {
-      const timer = setTimeout(() => {
-        setCountdown(countdown - 1);
-      }, 1000);
+      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
       return () => clearTimeout(timer);
     } else if (countdown === 0) {
       window.location.href = '/dashboard';
@@ -230,9 +245,7 @@ export function DonorConfirmation({ donorData }) {
   return (
     <div className="confirmation-form">
       <h2>Registration Confirmation</h2>
-      <p className="confirmation-description">
-        {confirmationMessage}
-      </p>
+      <p className="confirmation-description">{confirmationMessage}</p>
       {showWelcome && <p className="welcome-message">Welcome to the Organ Donor Portal!</p>}
       <div className="donor-details">
         <h3>Your Details:</h3>
